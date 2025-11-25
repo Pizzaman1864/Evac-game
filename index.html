@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地震・津波避難ゲーム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1>🚨 地震・津波避難ゲーム 🚨</h1>
+            <div class="progress" id="progress">選択 1/6</div>
+        </header>
+
+        <main class="game-main">
+            <div class="illustration-placeholder" id="illustration">
+                <span>イラスト</span>
+            </div>
+
+            <div class="scenario-box" id="scenario">
+                <p id="scenario-text">ゲームを開始してください</p>
+            </div>
+
+            <div class="choices" id="choices">
+                <button class="choice-btn" id="choice1" onclick="makeChoice(1)">選択肢1</button>
+                <button class="choice-btn" id="choice2" onclick="makeChoice(2)">選択肢2</button>
+            </div>
+
+            <div class="start-screen" id="start-screen">
+                <p class="intro-text">
+                    地震と津波から避難するゲームです。<br>
+                    正しい判断を続けて、安全な場所まで避難しましょう！
+                </p>
+                <button class="start-btn" onclick="startGame()">ゲームスタート</button>
+            </div>
+
+            <div class="result-screen" id="result-screen">
+                <div class="result-icon" id="result-icon"></div>
+                <h2 id="result-title"></h2>
+                <p id="result-message"></p>
+                <button class="retry-btn" onclick="startGame()">もう一度プレイ</button>
+            </div>
+        </main>
+
+        <footer class="game-footer">
+            <p>正しい防災知識を身につけましょう</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

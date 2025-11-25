@@ -1,0 +1,294 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Game Container */
+.game-container {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Header */
+.game-header {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+}
+
+.game-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.progress {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: inline-block;
+    font-weight: bold;
+}
+
+/* Main Game Area */
+.game-main {
+    padding: 24px;
+    position: relative;
+    min-height: 450px;
+}
+
+/* Illustration Placeholder */
+.illustration-placeholder {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+    border: 3px dashed #bbb;
+    border-radius: 12px;
+    height: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    color: #888;
+    font-size: 1.2rem;
+}
+
+/* Scenario Box */
+.scenario-box {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border-left: 5px solid #ff9800;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+#scenario-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #333;
+}
+
+/* Choice Buttons */
+.choices {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.choice-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 18px 24px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.choice-btn:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #1f618d 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.choice-btn:active {
+    transform: translateY(0);
+}
+
+/* Start Screen */
+.start-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    text-align: center;
+}
+
+.intro-text {
+    font-size: 1.1rem;
+    line-height: 2;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.start-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 18px 50px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+}
+
+.start-btn:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #922b21 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.5);
+}
+
+/* Result Screen */
+.result-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    text-align: center;
+}
+
+.result-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.result-screen h2 {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+}
+
+.result-screen p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.retry-btn {
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 16px 40px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+}
+
+.retry-btn:hover {
+    background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.5);
+}
+
+/* Success Result */
+.result-screen.success h2 {
+    color: #27ae60;
+}
+
+/* Failure Result */
+.result-screen.failure h2 {
+    color: #e74c3c;
+}
+
+/* Footer */
+.game-footer {
+    background: #f8f8f8;
+    padding: 16px;
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    border-top: 1px solid #eee;
+}
+
+/* Hidden State */
+.hidden {
+    display: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .game-header h1 {
+        font-size: 1.2rem;
+    }
+
+    .game-main {
+        padding: 16px;
+        min-height: 400px;
+    }
+
+    .illustration-placeholder {
+        height: 140px;
+    }
+
+    #scenario-text {
+        font-size: 1rem;
+    }
+
+    .choice-btn {
+        padding: 16px 20px;
+        font-size: 1rem;
+    }
+
+    .start-btn {
+        padding: 16px 40px;
+        font-size: 1.1rem;
+    }
+
+    .result-icon {
+        font-size: 60px;
+    }
+
+    .result-screen h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Animation for choices */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.choices.animate .choice-btn {
+    animation: fadeIn 0.4s ease forwards;
+}
+
+.choices.animate .choice-btn:nth-child(2) {
+    animation-delay: 0.1s;
+}
