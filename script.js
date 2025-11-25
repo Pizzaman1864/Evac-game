@@ -98,7 +98,7 @@ function startGame() {
     
     // 画面切り替え
     startScreenEl.classList.add('hidden');
-    resultScreenEl.style.display = 'none';
+    resultScreenEl.classList.add('hidden');
     choicesEl.classList.remove('hidden');
     
     // 最初のシナリオを表示
@@ -127,7 +127,7 @@ function showScenario() {
     
     // アニメーション
     choicesEl.classList.remove('animate');
-    void choicesEl.offsetWidth; // リフロー強制
+    choicesEl.getBoundingClientRect(); // リフロー強制
     choicesEl.classList.add('animate');
 }
 
@@ -170,8 +170,8 @@ function showResult(isSuccess, scenario = null) {
     isGameActive = false;
     choicesEl.classList.add('hidden');
     
-    resultScreenEl.style.display = 'flex';
-    resultScreenEl.className = 'result-screen ' + (isSuccess ? 'success' : 'failure');
+    resultScreenEl.classList.remove('hidden', 'success', 'failure');
+    resultScreenEl.classList.add(isSuccess ? 'success' : 'failure');
     
     if (isSuccess) {
         resultIconEl.textContent = '🎉';
