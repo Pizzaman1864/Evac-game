@@ -292,3 +292,7 @@ body {
 .choices.animate .choice-btn:nth-child(2) {
     animation-delay: 0.1s;
 }
+
+.choices.animate .choice-btn:nth-child(3) {
+    animation-delay: 0.2s;
+}
