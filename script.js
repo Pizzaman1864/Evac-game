@@ -377,7 +377,6 @@ function updateHUD() {
     const prog = document.getElementById('game-progress');
     if (prog) {
         if (!isCourseSelection) {
-            const totalScenarios = Object.keys(scenarios).length;
             prog.textContent = `STAGE ${currentScenarioId || 'START'}`;
         } else {
             prog.textContent = `COURSE SELECT`;
@@ -481,10 +480,10 @@ function makeChoice(choiceNum) {
         return;
     }
     
-    const choiceIndex = parseInt(choiceEl.dataset.choiceIndex);
+    const choiceIndex = parseInt(choiceEl.dataset.choiceIndex, 10);
     const scenario = scenarios[currentScenarioId];
     
-    if (!scenario || choiceIndex === undefined) {
+    if (!scenario || isNaN(choiceIndex) || choiceIndex === undefined) {
         console.error("Invalid choice or scenario");
         return;
     }
@@ -575,10 +574,19 @@ function makeChoice(choiceNum) {
 
 // 次のシナリオIDを取得（連番の場合）
 function getNextScenarioId() {
+    // Okawaコースの場合は明示的なIDシーケンスを使用
+    const okawaSequence = ['start', 's2', 's3', 's4', 's5', 's6', 's7', 's8'];
+    
+    const currentIndex = okawaSequence.indexOf(currentScenarioId);
+    if (currentIndex >= 0 && currentIndex < okawaSequence.length - 1) {
+        return okawaSequence[currentIndex + 1];
+    }
+    
+    // フォールバック: Object.keysを使用（順序に依存）
     const keys = Object.keys(scenarios);
-    const currentIndex = keys.indexOf(currentScenarioId);
-    if (currentIndex >= 0 && currentIndex < keys.length - 1) {
-        return keys[currentIndex + 1];
+    const keyIndex = keys.indexOf(currentScenarioId);
+    if (keyIndex >= 0 && keyIndex < keys.length - 1) {
+        return keys[keyIndex + 1];
     }
     return null;
 }
