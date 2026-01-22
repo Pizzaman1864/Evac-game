@@ -53,34 +53,6 @@
         #loading.hidden {
             display: none;
         }
-        
-        #mode-selector {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 200;
-            background: rgba(0,0,0,0.8);
-            padding: 15px 25px;
-            border-radius: 10px;
-            border: 2px solid #e74c3c;
-        }
-        
-        #mode-selector a {
-            color: #e74c3c;
-            text-decoration: none;
-            font-weight: bold;
-            margin: 0 10px;
-            padding: 8px 16px;
-            border: 1px solid #e74c3c;
-            border-radius: 5px;
-            transition: all 0.3s;
-        }
-        
-        #mode-selector a:hover {
-            background: #e74c3c;
-            color: white;
-        }
     </style>
 </head>
 <body>
@@ -88,10 +60,6 @@
         <h1>🌊 3D 津波避難シミュレーター 🌊</h1>
         <div class="spinner"></div>
         <p style="margin-top: 20px; font-size: 18px;">読み込み中...</p>
-    </div>
-    
-    <div id="mode-selector">
-        <a href="index-2d.html">2Dモードに切り替え</a>
     </div>
     
     <script type="module" src="game3d.js"></script>
