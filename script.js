@@ -149,6 +149,8 @@ let isGameActive = false;
 let isCourseSelection = false;
 let score = 0;
 let hp = 3; // ライフ制導入
+let survivalRate = 100; // 生存確率
+let gameTimer = null;
 
 // DOM要素
 const progressEl = document.getElementById('progress');
@@ -162,6 +164,144 @@ const resultScreenEl = document.getElementById('result-screen');
 const resultIconEl = document.getElementById('result-icon');
 const resultTitleEl = document.getElementById('result-title');
 const resultMessageEl = document.getElementById('result-message');
+
+// === GameTimer Class ===
+class GameTimer {
+    constructor(duration, onTick, onEnd) {
+        this.duration = duration;
+        this.remaining = duration;
+        this.onTick = onTick;
+        this.onEnd = onEnd;
+        this.intervalId = null;
+        this.isRunning = false;
+    }
+    
+    start() {
+        if (this.isRunning) return;
+        this.isRunning = true;
+        this.intervalId = setInterval(() => {
+            this.remaining -= 0.1;
+            if (this.remaining <= 0) {
+                this.remaining = 0;
+                this.stop();
+                if (this.onEnd) this.onEnd();
+            }
+            if (this.onTick) this.onTick(this.remaining, this.duration);
+        }, 100);
+    }
+    
+    stop() {
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
+        this.isRunning = false;
+    }
+    
+    reset(newDuration) {
+        this.stop();
+        this.duration = newDuration || this.duration;
+        this.remaining = this.duration;
+    }
+    
+    getProgress() {
+        return (this.remaining / this.duration) * 100;
+    }
+}
+
+// === AudioFX Class ===
+class AudioFX {
+    constructor() {
+        this.audioContext = null;
+        this.enabled = true;
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.warn('Web Audio API not supported');
+            this.enabled = false;
+        }
+    }
+    
+    playTone(frequency, duration, type = 'sine', volume = 0.3) {
+        if (!this.enabled || !this.audioContext) return;
+        
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        oscillator.frequency.value = frequency;
+        oscillator.type = type;
+        gainNode.gain.value = volume;
+        
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + duration);
+    }
+    
+    playRumble() {
+        // 低音の地鳴り
+        this.playTone(60, 0.5, 'sawtooth', 0.2);
+        setTimeout(() => this.playTone(55, 0.5, 'sawtooth', 0.15), 100);
+    }
+    
+    playAlert() {
+        // 高音の警告音
+        this.playTone(800, 0.2, 'square', 0.3);
+        setTimeout(() => this.playTone(1000, 0.2, 'square', 0.3), 250);
+    }
+    
+    playSuccess() {
+        // 成功音（上昇音階）
+        this.playTone(523, 0.15, 'sine', 0.2); // C
+        setTimeout(() => this.playTone(659, 0.15, 'sine', 0.2), 150); // E
+        setTimeout(() => this.playTone(784, 0.2, 'sine', 0.2), 300); // G
+    }
+    
+    playDamage() {
+        // ダメージ音（下降音）
+        this.playTone(400, 0.3, 'sawtooth', 0.3);
+    }
+    
+    playGameOver() {
+        // ゲームオーバー音
+        this.playTone(200, 0.8, 'triangle', 0.3);
+    }
+}
+
+// === VisualFX Functions ===
+const VisualFX = {
+    shakeScreen() {
+        document.body.classList.add('screen-shake');
+        setTimeout(() => document.body.classList.remove('screen-shake'), 500);
+    },
+    
+    flashRed() {
+        const flash = document.createElement('div');
+        flash.className = 'red-flash';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 300);
+    },
+    
+    async typewriterText(element, text, speed = 30) {
+        element.innerHTML = '';
+        const lines = text.split('<br>');
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            for (let j = 0; j < line.length; j++) {
+                element.innerHTML += line[j];
+                await new Promise(resolve => setTimeout(resolve, speed));
+            }
+            if (i < lines.length - 1) {
+                element.innerHTML += '<br>';
+            }
+        }
+    }
+};
+
+// Initialize audio
+const audioFX = new AudioFX();
 
 // ゲーム風スタイルを注入
 function injectGameStyles() {
@@ -237,9 +377,19 @@ function injectGameStyles() {
     const hud = document.createElement('div');
     hud.className = 'hud';
     hud.innerHTML = `
-        <span class="hp-bar">❤️❤️❤️</span>
+        <span class="survival-rate">生存率: 100%</span>
         <span id="game-progress">STAGE 1</span>
         <span class="score-board">SCORE: 0</span>
+    `;
+    
+    // Timer bar
+    const timerContainer = document.createElement('div');
+    timerContainer.className = 'timer-container';
+    timerContainer.innerHTML = `
+        <div class="timer-text">津波まであと 30秒</div>
+        <div class="timer-bar">
+            <div class="timer-fill"></div>
+        </div>
     `;
     
     const container = document.querySelector('.game-container');
@@ -247,6 +397,7 @@ function injectGameStyles() {
     
     if (container && mainContent) {
         container.insertBefore(hud, mainContent);
+        container.insertBefore(timerContainer, mainContent);
     }
     
     if (progressEl) {
@@ -261,6 +412,12 @@ function startGame() {
     isCourseSelection = true;
     score = 0;
     hp = 3;
+    survivalRate = 100;
+    
+    // Stop any existing timer
+    if (gameTimer) {
+        gameTimer.stop();
+    }
     
     // 画面切り替え
     startScreenEl.classList.add('hidden');
@@ -272,10 +429,9 @@ function startGame() {
 }
 
 function updateHUD() {
-    const hpStr = '❤️'.repeat(Math.max(0, hp));
-    const hpEl = document.querySelector('.hp-bar');
+    const survivalEl = document.querySelector('.survival-rate');
     const scoreEl = document.querySelector('.score-board');
-    if (hpEl) hpEl.textContent = `HP: ${hpStr}`;
+    if (survivalEl) survivalEl.textContent = `生存率: ${survivalRate}%`;
     if (scoreEl) scoreEl.textContent = `SCORE: ${score}`;
     
     const prog = document.getElementById('game-progress');
@@ -284,6 +440,27 @@ function updateHUD() {
             prog.textContent = `STAGE ${currentScenario + 1}/${scenarios.length}`;
         } else {
             prog.textContent = `COURSE SELECT`;
+        }
+    }
+    
+    // Update timer bar
+    if (gameTimer) {
+        const timerBar = document.querySelector('.timer-fill');
+        const timerText = document.querySelector('.timer-text');
+        if (timerBar) {
+            const progress = gameTimer.getProgress();
+            timerBar.style.width = progress + '%';
+            // Change color based on urgency
+            if (progress < 20) {
+                timerBar.style.background = '#e74c3c';
+            } else if (progress < 50) {
+                timerBar.style.background = '#f39c12';
+            } else {
+                timerBar.style.background = '#27ae60';
+            }
+        }
+        if (timerText) {
+            timerText.textContent = `津波まであと ${Math.ceil(gameTimer.remaining)}秒`;
         }
     }
 }
@@ -305,7 +482,7 @@ function showCourseSelection() {
 }
 
 // シナリオ表示
-function showScenario() {
+async function showScenario() {
     const scenario = scenarios[currentScenario];
     
     // 進行状況更新
@@ -314,8 +491,9 @@ function showScenario() {
     // イラスト更新
     illustrationEl.innerHTML = `<span style="font-size: 4rem;">${scenario.illustration}</span>`;
     
-    // シナリオテキスト更新（改行対応）
-    scenarioTextEl.innerHTML = scenario.situation.replace(/\n/g, '<br>');
+    // シナリオテキスト更新（タイプライター効果）
+    const formattedText = scenario.situation.replace(/\n/g, '<br>');
+    await VisualFX.typewriterText(scenarioTextEl, formattedText, 20);
     
     // 選択肢をランダムに配置
     const shuffledChoices = shuffleChoices(scenario.choices);
@@ -331,6 +509,20 @@ function showScenario() {
     choicesEl.classList.remove('animate');
     choicesEl.getBoundingClientRect(); // リフロー強制
     choicesEl.classList.add('animate');
+    
+    // Start/Reset timer for each scenario
+    if (gameTimer) {
+        gameTimer.stop();
+    }
+    gameTimer = new GameTimer(30, updateHUD, () => {
+        // Timer expired - tsunami hits
+        audioFX.playGameOver();
+        VisualFX.shakeScreen();
+        survivalRate = 0;
+        showResult(false, { wrongMessage: '時間切れ！津波が到達しました。', wrongReason: '災害時は迅速な判断が命を守ります。' });
+    });
+    gameTimer.start();
+    updateHUD();
 }
 
 // 選択肢をシャッフル
@@ -354,6 +546,7 @@ function makeChoice(choiceNum) {
         if (selectedCourse) {
             scenarios = courses[selectedCourse];
             isCourseSelection = false;
+            audioFX.playSuccess();
             showScenario();
         }
         return;
@@ -364,29 +557,39 @@ function makeChoice(choiceNum) {
     
     if (isCorrect) {
         // 正解
+        audioFX.playSuccess();
         score += 100;
         currentScenario++;
         
         if (currentScenario >= scenarios.length) {
             // ゲームクリア
+            if (gameTimer) gameTimer.stop();
             showResult(true);
         } else {
             // 次のシナリオへ
             showScenario();
         }
     } else {
-        // 不正解 - HP減少
+        // 不正解 - 生存率減少
+        audioFX.playDamage();
+        VisualFX.flashRed();
+        VisualFX.shakeScreen();
+        
         hp--;
+        survivalRate = Math.max(0, survivalRate - 25);
         updateHUD();
         
-        if (hp <= 0) {
+        if (hp <= 0 || survivalRate <= 0) {
             // ゲームオーバー
+            if (gameTimer) gameTimer.stop();
+            audioFX.playGameOver();
             showResult(false, scenario);
         } else {
             // ダメージ演出とヒント表示（簡易的）
-            alert(`不正解！HPが減りました。\n\n${scenario.wrongMessage}\n\n理由: ${scenario.wrongReason}`);
+            alert(`不正解！生存率が減少しました。\n\n${scenario.wrongMessage}\n\n理由: ${scenario.wrongReason}`);
             currentScenario++;
             if (currentScenario >= scenarios.length) {
+                if (gameTimer) gameTimer.stop();
                 showResult(true);
             } else {
                 showScenario();
