@@ -215,7 +215,7 @@ class AudioFX {
         this.audioContext = null;
         this.enabled = true;
         try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.audioContext = new AudioContext();
         } catch (e) {
             console.warn('Web Audio API not supported');
             this.enabled = false;
@@ -284,17 +284,19 @@ const VisualFX = {
     },
     
     async typewriterText(element, text, speed = 30) {
-        element.innerHTML = '';
+        element.textContent = '';
         const lines = text.split('<br>');
         
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             for (let j = 0; j < line.length; j++) {
-                element.innerHTML += line[j];
+                element.textContent += line[j];
                 await new Promise(resolve => setTimeout(resolve, speed));
             }
             if (i < lines.length - 1) {
-                element.innerHTML += '<br>';
+                // Create line break element
+                const br = document.createElement('br');
+                element.appendChild(br);
             }
         }
     }
@@ -302,6 +304,13 @@ const VisualFX = {
 
 // Initialize audio
 const audioFX = new AudioFX();
+
+// Game configuration constants
+const GAME_CONFIG = {
+    TIMER_DURATION: 30,
+    SURVIVAL_PENALTY: 25,
+    TYPEWRITER_SPEED: 20
+};
 
 // ゲーム風スタイルを注入
 function injectGameStyles() {
@@ -493,7 +502,7 @@ async function showScenario() {
     
     // シナリオテキスト更新（タイプライター効果）
     const formattedText = scenario.situation.replace(/\n/g, '<br>');
-    await VisualFX.typewriterText(scenarioTextEl, formattedText, 20);
+    await VisualFX.typewriterText(scenarioTextEl, formattedText, GAME_CONFIG.TYPEWRITER_SPEED);
     
     // 選択肢をランダムに配置
     const shuffledChoices = shuffleChoices(scenario.choices);
@@ -514,7 +523,7 @@ async function showScenario() {
     if (gameTimer) {
         gameTimer.stop();
     }
-    gameTimer = new GameTimer(30, updateHUD, () => {
+    gameTimer = new GameTimer(GAME_CONFIG.TIMER_DURATION, updateHUD, () => {
         // Timer expired - tsunami hits
         audioFX.playGameOver();
         VisualFX.shakeScreen();
@@ -576,7 +585,7 @@ function makeChoice(choiceNum) {
         VisualFX.shakeScreen();
         
         hp--;
-        survivalRate = Math.max(0, survivalRate - 25);
+        survivalRate = Math.max(0, survivalRate - GAME_CONFIG.SURVIVAL_PENALTY);
         updateHUD();
         
         if (hp <= 0 || survivalRate <= 0) {
